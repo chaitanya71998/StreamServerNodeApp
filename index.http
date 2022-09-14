@@ -1,0 +1,31 @@
+POST http://localhost:5000/getTokenFromUser/
+content-type: application/json
+
+{
+   "user_name":"Chaitanya"
+}
+ 
+####
+
+
+POST http://localhost:5000/addBatchFeed/
+content-type: application/json
+
+{
+    "activity":{
+    "actor": "SU:undefined",
+    "attachments": {
+        "files": [],
+        "images": []
+    },
+    "duration": "7.04ms",
+    "foreign_id": "",
+    "id": "c1fb1f8d-340b-11ed-b6c3-06e4bae230b4",
+    "object": "test user-c",
+    "origin": null,
+    "target": "",
+    "text": "test user-c",
+    "time": "2022-09-14T09:01:02.209832",
+    "verb": "post"
+}
+}
