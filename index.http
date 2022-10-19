@@ -1,12 +1,13 @@
-POST http://localhost:5000/getTokenFromUser/
-content-type: application/json
+POST http://localhost:5000/getTokenFromUser/eric/
 
-{
-   "user_name":"Chaitanya"
-}
- 
+####
+POST http://localhost:5000/getUser/eric/
+
 ####
 
+POST http://localhost:5000/hashtags/test/
+
+####
 
 POST http://localhost:5000/addBatchFeed/
 content-type: application/json
@@ -29,3 +30,11 @@ content-type: application/json
     "verb": "post"
 }
 }
+####
+get  http://localhost:5000/follow/timeline/Chaitanya/Chaitanya/
+####
+get http://localhost:5000/followings/Issac/
+####
+get http://localhost:5000/followers/Chaitanya/
+####
+get http://localhost:5000/followStats/Chaitanya/

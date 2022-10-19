@@ -7,29 +7,59 @@ let stream = require("getstream")
 app.use(cors())
 app.use(express.json())
 
-app.get("/", (request, response) => {
-  res.sendFile("index.html", { root: __dirname })
+const getStreamPOC = {
+  API_KEY: "5nr74n2ybm7z",
+  APP_ID: "1215105",
+  API_SECRET:
+    "37q398r9fn9h26w7f4canjjqcfwjzafgeb83nemqsbxyht7xjbybq6sw2gdmt2n8",
+}
+
+const getStreamPOC1 = {
+  API_KEY: "dgmpkecxffef",
+  API_SECRET:
+    "9vbkm8zj7a7uqgee73szhp9znf5xvmfqnqvytbvc44ggz8ffephech6y6d3hsedq",
+  APP_ID: "1215400",
+}
+const { API_KEY, API_SECRET, APP_ID } = getStreamPOC
+
+const getClient = stream.connect(API_KEY, API_SECRET, APP_ID)
+
+app.get("/", async (request, response) => {
+  response.sendFile("index.html", { root: __dirname })
+  try {
+    response.send({ userToken: userToken })
+  } catch (e) {
+    response.send({ e })
+  }
 })
 
-app.post("/getTokenFromUser/", async (request, response) => {
+app.post("/getTokenFromUser/:user_name", async (request, response) => {
   // Instantiate a new client (client side)
   try {
-    let client = stream.connect(
-      "wwfzfuma9356",
-      "ts9ke7dw3kqzzfq3z6zzwv8pedhhfd68m7vj6xkxywb3mbs4myhwwk76qrpjudau",
-      "1209187"
-    )
-    const { data } = request.body
-    const { user_name } = JSON.parse(JSON.parse(data))
+    let client = getClient
+    const { user_name } = request.params
     console.log(user_name, "username")
 
     let userToken = client.createUserToken(`${user_name}`)
+    let user = client.user(user_name).getOrCreate({
+      name: user_name,
+      occupation: "Software Engineer",
+      gender: "male",
+    })
 
-    // to make user follow the coding practice
-    userFeed = client.feed("timeline", user_name, userToken)
-    await userFeed.follow("codingPractice", "cp_1")
+    response.send({ user_token: userToken, user })
+  } catch (e) {
+    console.log(e)
+  }
+})
 
-    response.send({ user_token: userToken })
+app.post("/getUser/:user_name", async (request, response) => {
+  // Instantiate a new client (client side)
+  try {
+    let client = getClient
+    const { user_name } = request.params
+    let user = client.get(`${user_name}`)
+    response.send({ user })
   } catch (e) {
     console.log(e)
   }
@@ -37,21 +67,123 @@ app.post("/getTokenFromUser/", async (request, response) => {
 
 app.post("/addBatchFeed/", async (request, response) => {
   try {
-    let client = stream.connect(
-      "wwfzfuma9356",
-      "ts9ke7dw3kqzzfq3z6zzwv8pedhhfd68m7vj6xkxywb3mbs4myhwwk76qrpjudau",
-      "1209187"
-    )
-    const feeds = ["codingPractice:cp_1"]
+    let client = getClient
+
     const { data } = request.body
 
-    const { activity } = JSON.parse(JSON.parse(data))
+    const { activity, feeds_ist } = JSON.parse(JSON.parse(data))
     console.log(activity, "activity")
 
-    const success = await client.addToMany(activity, feeds)
+    const success = await client.addToMany(activity, feeds_ist)
     response.send({})
   } catch (e) {
     response.send(e)
+  }
+})
+
+app.post("/hashtags/:hash_tag", async (request, response) => {
+  // Instantiate a new client (client side)
+  try {
+    let client = getClient
+
+    const { hash_tag } = request.params
+    const { data } = request.body
+    const { activity } = JSON.parse(JSON.parse(data))
+    console.log(activity, "activity")
+    let hashToken = client.createUserToken(`${hash_tag}`)
+    client.user(hash_tag).update({
+      name: hash_tag,
+    }) // To add activities to hash tags
+    hashtags = client.feed("hashtags", hash_tag, hashToken)
+    const feeds = [`"hashtags":${hash_tag}`]
+    const success = await client.addToMany(activity, feeds)
+    response.send({ hash_tag: hashToken })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+app.post("/mentions/:mention", async (request, response) => {
+  // Instantiate a new client (client side)
+  try {
+    let client = getClient
+    const { mention } = request.params
+    console.log(mention, "activity")
+    const { data } = request.body
+    const { activity } = JSON.parse(JSON.parse(data))
+    console.log(activity, "activity")
+    // since mention user may or may not exist i was creating him again
+    let mentionUser = client.createUserToken(`${mention}`)
+    client.user(mention).update({
+      name: mention,
+    })
+    mentionUser = client.feed("mentions", hash_tag, hashTag)
+    const feeds = [`"mentions":${mention}`]
+    const success = await client.addToMany(activity, feeds)
+    response.send({ mention_token: mentionUser })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+app.get("/followers/:user_name", async (request, response) => {
+  // Instantiate a new client (client side)
+  try {
+    let client = getClient
+    const { user_name } = request.params
+
+    user1 = await client.feed("timeline", user_name)
+    let followers = await user1.followers({ limit: "10", offset: "10" })
+    response.send({ followers: followers })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+app.get("/followings/:user_name", async (request, response) => {
+  // Instantiate a new client (client side)
+  try {
+    let client = getClient
+    const { user_name } = request.params
+
+    user1 = await client.feed("timeline", user_name)
+    let followings = await user1.following({ limit: "10", offset: "0" })
+    response.send({ followings: followings })
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+app.get(
+  "/follow/timeline/:user_name/:follow_user",
+  async (request, response) => {
+    // Instantiate a new client (client side)
+    try {
+      let client = getClient
+      const { user_name, follow_user } = request.params
+
+      user1 = await client.feed("notification", follow_user)
+      await user1.follow("timeline", user_name)
+      user2 = await client.feed("notification", follow_user)
+      let followings = await user2.following({ limit: "10", offset: "0" })
+      response.send({ followings: followings })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+)
+
+app.get("/followStats/:user_name", async (request, response) => {
+  // Instantiate a new client (client side)
+  try {
+    let client = getClient
+    const { user_name } = request.params
+
+    user1 = await client.feed("timeline", user_name)
+    let followings = await user1.followStats()
+    response.send({ followings: followings })
+  } catch (e) {
+    console.log(e)
   }
 })
 
