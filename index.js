@@ -33,7 +33,7 @@ app.get("/", async (request, response) => {
   }
 })
 
-app.post("/getTokenFromUser/:user_name", async (request, response) => {
+app.get("/getTokenFromUser/:user_name", async (request, response) => {
   // Instantiate a new client (client side)
   try {
     let client = getClient
@@ -47,7 +47,7 @@ app.post("/getTokenFromUser/:user_name", async (request, response) => {
       gender: "male",
     })
 
-    response.send({ user_token: userToken, user })
+    response.send({ user_token: userToken })
   } catch (e) {
     console.log(e)
   }
@@ -133,7 +133,7 @@ app.get("/followers/:user_name", async (request, response) => {
     const { user_name } = request.params
 
     user1 = await client.feed("timeline", user_name)
-    let followers = await user1.followers({ limit: "10", offset: "10" })
+    let followers = await user1.followers()
     response.send({ followers: followers })
   } catch (e) {
     console.log(e)
@@ -147,7 +147,7 @@ app.get("/followings/:user_name", async (request, response) => {
     const { user_name } = request.params
 
     user1 = await client.feed("timeline", user_name)
-    let followings = await user1.following({ limit: "10", offset: "0" })
+    let followings = await user1.following()
     response.send({ followings: followings })
   } catch (e) {
     console.log(e)
@@ -186,6 +186,63 @@ app.get("/followStats/:user_name", async (request, response) => {
     console.log(e)
   }
 })
+
+app.post(
+  "/followRelationShip/:user_name/:feed_slug/:follow_user/:follow_feed_slug",
+  async (request, response) => {
+    try {
+      const { user_name, feed_slug, follow_user, follow_feed_slug } =
+        request.params
+      console.log(feed_slug, user_name, follow_feed_slug, follow_user)
+      const userFeed = getClient.feed(feed_slug, user_name)
+      const userFeed1 = await userFeed.follow(follow_feed_slug, follow_user)
+      response.send(userFeed1)
+    } catch (e) {
+      response.send(e)
+    }
+  }
+)
+
+app.post(
+  "/unFollow/:user_name/:feed_slug/:unfollow_user/:unfollow_feed_slug",
+  async (request, response) => {
+    try {
+      const { user_name, feed_slug, unfollow_user, unfollow_feed_slug } =
+        request.params
+      console.log(feed_slug, user_name, unfollow_user, unfollow_feed_slug)
+      const userFeed = getClient.feed(feed_slug, user_name)
+      const userFeed1 = await userFeed.unfollow(
+        unfollow_feed_slug,
+        unfollow_user
+      )
+      response.send(userFeed1)
+    } catch (e) {
+      response.send(e)
+    }
+  }
+)
+
+app.get(
+  "/follow_Suggestions/:user_name/:feed_slug",
+  async (request, response) => {
+    try {
+      const { user_name, feed_slug } = request.params
+      const params = { user_id: user_name, feed_slug: feed_slug }
+      await getClient.personalization
+        .get("personalized_feed", params)
+        .then((responsebody) => responsebody.json())
+        .then((responseData) => {
+          response.send(responseData)
+        })
+        .catch((e) => {
+          response.send(e)
+        })
+    } catch (e) {
+      response.send(e)
+    }
+  }
+)
+app.post("/addActivities", () => {})
 
 app.listen(port, () => {
   //server starts listening for any attempts from a client to connect at port: {port}

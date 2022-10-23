@@ -1,12 +1,19 @@
-POST http://localhost:5000/getTokenFromUser/eric/
+GET http://localhost:5000/getTokenFromUser/eric/
 
 ####
-POST http://localhost:5000/getUser/eric/
+GET http://localhost:5000/getUser/eric/
 
 ####
 
 POST http://localhost:5000/hashtags/test/
 
+####
+
+GET http://localhost:5000/personalized/Chaitanya/timeline
+####
+
+
+POST http://localhost:5000/followRelationShip/Bhargav/user_activities/Chaitanya/user_activities
 ####
 
 POST http://localhost:5000/addBatchFeed/
@@ -33,8 +40,16 @@ content-type: application/json
 ####
 get  http://localhost:5000/follow/timeline/Chaitanya/Chaitanya/
 ####
-get http://localhost:5000/followings/Issac/
+get http://localhost:5000/followings/Don/
 ####
-get http://localhost:5000/followers/Chaitanya/
+get http://localhost:5000/followers/Don/
 ####
-get http://localhost:5000/followStats/Chaitanya/
+get http://localhost:5000/followStats/Bhargav/
+####
+POST http://localhost:5000/followRelationShip/Bhargav/user_activities/Chaitanya/user_activities/
+####
+
+POST http://localhost:5000/unFollow/Chaitanya/notification/Chaitanya/timeline
+
+####
+
